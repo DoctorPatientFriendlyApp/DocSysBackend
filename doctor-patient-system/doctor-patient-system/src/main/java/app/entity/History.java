@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor 
 @AllArgsConstructor 
 //@Builder
-public class History {
+public class History extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

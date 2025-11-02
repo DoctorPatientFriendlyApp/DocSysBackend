@@ -1,5 +1,7 @@
 package app.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,10 +13,16 @@ public class Report {
     private Long id;
 
     private String reportType; // e.g. "CBC", "MRI"
+    @Column(length=200)
     private String fileUrl;
     private String notes;
+    private String description;
+    private LocalDate reportDate;
 
     @ManyToOne
     @JoinColumn(name = "patient_id")
     private Patient patient;
+    
+   
+
 }

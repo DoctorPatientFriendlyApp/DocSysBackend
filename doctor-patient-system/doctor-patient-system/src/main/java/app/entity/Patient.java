@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "patients")
@@ -65,6 +66,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
     @JoinTable(name = "doctor_patient",
             joinColumns = @JoinColumn(name = "patient_id"),       // creates an intermediate table doctor_patient with both IDs: doctorID & PatientId 
             inverseJoinColumns = @JoinColumn(name = "doctor_id")) // referse to doctor (inverse side)
+    @JsonIgnore
     private List<Doctor> doctors = new ArrayList<>();
 
     
@@ -83,7 +85,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
     @ToString.Exclude
     @EqualsAndHashCode.Exclude                                                       // remove report which are not mapped with patient
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL,fetch=FetchType.LAZY, orphanRemoval = true)    //Automatically persisted/deleted with the patient.
-    @JsonIgnore
+    @JsonManagedReference  // avoid infinite looping
     private List<Report> reports = new ArrayList<>();              //One patient can have many lab reports (e.g., CBC, MRI, etc.)
     
  // -------------------------------------------------------------------

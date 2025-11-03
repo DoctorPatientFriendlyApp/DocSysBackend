@@ -1,16 +1,26 @@
 package app.controller;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
 import app.entity.Gender;
+import app.entity.Patient;
+import app.entity.Report;
 import app.entity.SocialClass;
 import app.entity.ZodiacSign;
-import app.service.PatientService;
+import app.repository.PatientRepository;
+import app.repository.ReportRepository;
+import app.service.CloudinaryService;
+import app.service.IPatientService;
+import app.service.PatientServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +31,8 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin(origins = "*")
 public class PatientController {
 
-    private final PatientService patientService;
+    private final IPatientService patientService;//✅ inject interface
+
 
     // ✅ Register new patient
     @PostMapping              
@@ -30,7 +41,7 @@ public class PatientController {
         return ResponseEntity.ok(patientService.createPatient(dto));
     }
 
-    // ✅ Update diagnosis or advice
+    // ✅ Update Patient : diagnosis or advice
     @PutMapping("/{id}")
     @Operation(description = " Update Patient ")
     public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @RequestBody PatientDTO dto) {
@@ -71,7 +82,31 @@ public class PatientController {
     @DeleteMapping("/{id}")
     @Operation(description = " Delete Patient ")
     public ResponseEntity<String> deactivate(@PathVariable Long id) {
-        patientService.deactivatePatient(id);
+    	patientService.deactivatePatient(id);
         return ResponseEntity.ok("Patient marked inactive");
     }
+    
+    
+    //-------------------------------------------------------------------------------
+    // ✅ Upload multiple reports for a patient
+    @PostMapping(value = "/{id}/reports", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadReport(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file, // single file now
+            @RequestParam(required = false) String reportType,
+            @RequestParam(required = false) String notes,
+            @RequestParam(required = false) String description) {
+
+        try {
+            Report report = patientService.uploadPatientReport(id, file, reportType, notes, description);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error uploading report: " + e.getMessage());
+        }
+    }
+
+
+  
+    
 }

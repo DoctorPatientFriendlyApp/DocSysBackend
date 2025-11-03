@@ -1,5 +1,8 @@
 package app.service;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -7,6 +10,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
@@ -21,24 +25,20 @@ import app.entity.Role;
 import app.entity.Treatment;
 import app.entity.User;
 import app.repository.DoctorRepository;
-import app.repository.HistoryRepository;
 import app.repository.PatientRepository;
 import app.repository.ReportRepository;
-import app.repository.TreatmentRepository;
 import app.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @AllArgsConstructor
-public class PatientService {
+public class PatientServiceImpl implements IPatientService{
 
 	    private final PatientRepository patientRepository;
 	    private final DoctorRepository doctorRepository;
 	    private final ReportRepository reportRepository;
-	    private final TreatmentRepository treatmentRepository;
-	    private final HistoryRepository historyRepository;
+	    private final CloudinaryService cloudinaryService;
 	    private final ModelMapper modelMapper;
 	    private final UserRepository userRepository;
 //    private PasswordEncoder passwordencoder;  // implement with spring security
@@ -122,7 +122,7 @@ public class PatientService {
             System.out.println("Entity DOB before map: " + patient.getDob());
             
             
-         // ✅ Handle Reports (Add new or update existing, don't delete old)
+         // ✅3 Handle Reports (Add new or update existing, don't delete old)
             if (patientDTO.getReports() != null && !patientDTO.getReports().isEmpty()) {
                 for (ReportDTO reportDTO : patientDTO.getReports()) {
 
@@ -145,7 +145,7 @@ public class PatientService {
                 }
             }
 
-         // ✅ Handle Treatments (Add new or update existing, don't delete old)
+         // ✅ 4.Handle Treatments (Add new or update existing, don't delete old)
             if (patientDTO.getTreatments() != null && !patientDTO.getTreatments().isEmpty()) {
                 for (TreatmentDTO treatmentDTO : patientDTO.getTreatments()) {
 
@@ -169,7 +169,7 @@ public class PatientService {
             }
 
             
-            // 3️⃣ Update Doctors (ManyToMany)
+            // 5. Update Doctors (ManyToMany)
             if (patientDTO.getDoctorIds() != null) {
                 List<Doctor> newDoctors = doctorRepository.findAllById(patientDTO.getDoctorIds());
                 patient.clearDoctors();
@@ -181,7 +181,39 @@ public class PatientService {
             return toDTO(updated);
         }
 
-  
+  //------------------------------------------------------------------------------------------------------
+        public Report uploadPatientReport(Long patientId,
+                MultipartFile file,
+                String reportType,
+                String notes,
+                String description) throws IOException {
+
+       // 1️⃣ Fetch patient
+          Patient patient = patientRepository.findById(patientId)
+                 .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+            // 2️⃣ Upload file to Cloudinary : upload under patient_reports folder 
+            String folderName = "patient_reports/" + patientId;// To keep uploads more organized,group by entity ID:
+            String fileUrl = cloudinaryService.uploadFile(file, "patient_reports");
+
+             // 3️⃣ Create Report entity
+            Report report = Report.builder()
+                                  .reportType(reportType)
+                                  .notes(notes)
+                                  .description(description)
+                                  .reportDate(LocalDate.now())
+                                  .fileUrl(fileUrl)
+                                  .patient(patient)
+                                  .build();
+
+              // 4️⃣ Save report
+                   return reportRepository.save(report);
+}
+
+        
+        
+        
+   
 
     // ✅ Get all patients
     public List<PatientDTO> getAllPatients() {
@@ -228,4 +260,6 @@ public class PatientService {
         patient.addDoctor(doctor);
         return toDTO(patientRepository.save(patient));
     }
+
+
 }

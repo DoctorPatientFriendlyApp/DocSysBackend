@@ -2,6 +2,8 @@ package app.entity;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +15,7 @@ public class Report {
     private Long id;
 
     private String reportType; // e.g. "CBC", "MRI"
-    @Column(length=200)
+    @Column(length=500)
     private String fileUrl;
     private String notes;
     private String description;
@@ -21,6 +23,7 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "patient_id")
+    @JsonBackReference // Add this to prevent infinite recursion
     private Patient patient;
     
    

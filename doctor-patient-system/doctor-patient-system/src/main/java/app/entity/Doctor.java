@@ -32,7 +32,9 @@ public class Doctor extends BaseEntity{
     @Column(unique = true)
     private String pan;
     private String specialization;
+    @Column(length = 500)
     private String certificateUrl; // uploaded file
+    
     private boolean verified = false;
 
     @OneToOne(fetch = FetchType.EAGER)

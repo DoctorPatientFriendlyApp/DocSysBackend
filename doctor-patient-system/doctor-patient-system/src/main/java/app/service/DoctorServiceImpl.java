@@ -1,5 +1,6 @@
 package app.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.DoctorDTO;
 import app.dto.DoctorRegisterDTO;
@@ -24,13 +26,14 @@ import lombok.AllArgsConstructor;
 @Service
 @Transactional
 @AllArgsConstructor
-public class DoctorService {
+public class DoctorServiceImpl implements IDoctorService {
 	
 	
 	private final DoctorRepository doctorRepository; 
 	private final PatientRepository patientRepository;
 	private final UserRepository userRepository;
 	private final ModelMapper modelMapper;
+	private final CloudinaryService cloudinaryService;
 //	private final PasswordEncoder passwordEncoder;
 	//-------------------------------------------------------------------------------------------
 	// conversion dto -> entity & entity to dto
@@ -199,6 +202,35 @@ public class DoctorService {
         doctor.setActive(false);
         doctorRepository.save(doctor);
     }
+    
+    
+    // ✅ Upload certificate
+    @Override
+    public DoctorDTO uploadDoctorCertificate(Long doctorId, MultipartFile file) throws IOException {
+
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + doctorId));
+
+        // 1️⃣ Upload to Cloudinary : uplode under the folder doctorscertification
+        String folderName = "doctorscertification/" + doctorId;// To keep uploads more organized, group by entity ID:
+        String certificateUrl = cloudinaryService.uploadFile(file,folderName);
+
+        // 2️⃣ Set and save
+        doctor.setCertificateUrl(certificateUrl);
+        Doctor updated = doctorRepository.save(doctor);
+
+        // 3️⃣ Return updated DTO
+        return modelMapper.map(updated, DoctorDTO.class);
+    }
+
+    
+    public DoctorDTO verifyDoctor(Long id) {
+        Doctor doctor = doctorRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        doctor.setVerified(true);
+        return modelMapper.map(doctorRepository.save(doctor), DoctorDTO.class);
+    }
+
 }
 	
 

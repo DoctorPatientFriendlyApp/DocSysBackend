@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
 import app.entity.Gender;
@@ -25,20 +26,28 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
+
+//@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/patients")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PatientController {
 
     private final IPatientService patientService;//✅ inject interface
 
 
     // ✅ Register new patient
-    @PostMapping              
+    @PostMapping               
     @Operation(description = "Create Patient ")
     public ResponseEntity<PatientDTO> createPatient(@RequestBody PatientRegisterDTO dto) {
         return ResponseEntity.ok(patientService.createPatient(dto));
+    }
+    
+    @PostMapping("/login")
+    public ResponseEntity<PatientDTO> login(@RequestBody LoginDTO dto) {
+        PatientDTO patient = patientService.login(dto);
+        return ResponseEntity.ok(patient);
     }
 
     // ✅ Update Patient : diagnosis or advice

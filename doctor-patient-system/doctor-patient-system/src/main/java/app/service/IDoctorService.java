@@ -7,12 +7,17 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.DoctorDTO;
+
 import app.dto.DoctorRegisterDTO;
+import app.dto.LoginDTO;
 
 public interface IDoctorService {
 
 	  // ➕ Create a new doctor
     DoctorDTO createDoctor(DoctorRegisterDTO doctorDTO);
+    
+    // Login
+    public DoctorDTO login(LoginDTO dto);
 
     // 🔍 Get all doctors
     List<DoctorDTO> getAllDoctors();
@@ -38,5 +43,7 @@ public interface IDoctorService {
 
    // verify doctor 
 	public DoctorDTO verifyDoctor(Long id);
+
+	
     
 }

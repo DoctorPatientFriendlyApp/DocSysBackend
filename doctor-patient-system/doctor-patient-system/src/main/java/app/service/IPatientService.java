@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
 import app.entity.Report;
@@ -13,6 +14,9 @@ public interface IPatientService {
 
     // 🔹 Register a new patient
     PatientDTO createPatient(PatientRegisterDTO dto);
+    
+    // Login
+    PatientDTO login(LoginDTO dto);
 
     // 🔹 Update existing patient details
     PatientDTO updatePatient(Long id, PatientDTO patientDTO);
@@ -41,4 +45,6 @@ public interface IPatientService {
 
     // 🔹 Assign doctor to patient
     PatientDTO assignDoctor(Long patientId, Long doctorId);
+
+	
 }

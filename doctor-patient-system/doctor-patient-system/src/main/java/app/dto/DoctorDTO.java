@@ -20,6 +20,7 @@ import lombok.Setter;
 public class DoctorDTO {
     
 	    private Long id;
+	    private String email;
 	    private String name;
 	    private Integer age;
 	    private Gender sex;

@@ -1,17 +1,20 @@
 package app.service;
 
+import java.io.Console;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.DoctorDTO;
 import app.dto.DoctorRegisterDTO;
+import app.dto.LoginDTO;
 import app.entity.Doctor;
 import app.entity.Patient;
 import app.entity.Role;
@@ -50,8 +53,15 @@ public class DoctorServiceImpl implements IDoctorService {
                     .stream()
                     .map(Patient::getId)
                     .collect(Collectors.toList());
+        
          // set patients IDs
             doctorDTO.setPatientIds(patientIdsList);
+            System.err.println(" Email "+ doctor.getUser().getEmail());
+            
+            if (doctor.getUser() != null) {
+            	doctorDTO.setEmail(doctor.getUser().getEmail());
+                }
+ 
         }
 
         return doctorDTO;
@@ -99,7 +109,31 @@ public class DoctorServiceImpl implements IDoctorService {
 	    return toDTO(savedDoctor);// return savedDoctorDto :  Convert back to DTO for response
 	  
 	}
+	
+	
+	
+//	@Override
+//	public DoctorLoginDTO login(DoctorLoginDTO dto) {
+//
+//		Doctor  doctor = doctorRepository.findByUserEmailAndPassword(dto.getEmail(),dto.getPassword()).orElseThrow(()->new RuntimeException(" Wrong email or password"));
+//	    
+//	   return toDTO(doctor);
+//	}
 
+    @Override
+    public DoctorDTO login(LoginDTO dto) {
+    	
+    	System.out.println("Email in dto: "+ dto.getEmail() + "Password in dto : "+ dto.getPassword());
+        // ✅ Find doctor by nested email and password
+        Doctor doctor = doctorRepository
+                .findByUserEmailAndUserPassword(dto.getEmail(), dto.getPassword())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+       
+        System.out.print(" "+ doctor.getName());
+        DoctorDTO responce = toDTO(doctor);
+        responce.setEmail(doctor.getUser().getEmail());
+        return responce;
+    }
 	
 	
 	// get all doctors
@@ -107,6 +141,7 @@ public class DoctorServiceImpl implements IDoctorService {
 	                                 // get doctors & convert them into dtos 
 	  List<DoctorDTO> doctorDTOs =  doctorRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
 	 
+	  
 	  return doctorDTOs;
 	}
 	
@@ -124,7 +159,12 @@ public class DoctorServiceImpl implements IDoctorService {
     public DoctorDTO getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + id));
-        return toDTO(doctor);
+        System.out.print(" Email : " + doctor.getUser().getEmail());
+        DoctorDTO dto= toDTO(doctor);
+        //  // set email 
+        dto.setEmail(doctor.getUser().getEmail());
+//        System.out.print(" Email in dto : " + dto.getEmail());
+        return dto;
     }
     
     
@@ -179,6 +219,10 @@ public class DoctorServiceImpl implements IDoctorService {
             }
         }
 
+        
+        // get doctor & set email  
+        existingDoctor.getUser().setEmail(doctorDTO.getEmail());
+//        existingDoctor.getUser().setPassword(doctorDTO.);
         // 4️⃣ Persist updated doctor (owning side)
         // - Because existingDoctor is managed, you could rely on JPA flush at transaction commit,
         //   but calling save() is explicit and OK — it returns the persisted instance.
@@ -230,6 +274,8 @@ public class DoctorServiceImpl implements IDoctorService {
         doctor.setVerified(true);
         return modelMapper.map(doctorRepository.save(doctor), DoctorDTO.class);
     }
+
+
 
 }
 	

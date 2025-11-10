@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
 import app.dto.ReportDTO;
@@ -98,6 +99,20 @@ public class PatientServiceImpl implements IPatientService{
         Patient savedPatient = patientRepository.save(patient);
         return toDTO(savedPatient);
     }
+    
+    
+    
+	@Override
+	public PatientDTO login(LoginDTO dto) {
+	
+	Patient patient = patientRepository.findByUserEmailAndUserPassword(dto.getEmail(), dto.getPassword()).orElseThrow(()->new RuntimeException(" Invalid Email or Password "));
+	
+		return toDTO(patient);
+	}
+
+    
+    
+    
     
     
   
@@ -260,6 +275,7 @@ public class PatientServiceImpl implements IPatientService{
         patient.addDoctor(doctor);
         return toDTO(patientRepository.save(patient));
     }
+
 
 
 }

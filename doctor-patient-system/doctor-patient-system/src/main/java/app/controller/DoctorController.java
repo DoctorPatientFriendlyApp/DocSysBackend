@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,25 +20,53 @@ import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.DoctorDTO;
 import app.dto.DoctorRegisterDTO;
+import app.dto.LoginDTO;
+import app.service.CloudinaryService;
 import app.service.DoctorServiceImpl;
 import app.service.IDoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/doctors")
+//@CrossOrigin(origins = "http://localhost:5173") // specific frontend
 @AllArgsConstructor
 public class DoctorController {
 
 	private final IDoctorService doctorService;
+	private final CloudinaryService cloudinaryService;
 
   // Register Doctor 
-  @PostMapping
-  @Operation(description = " Create Doctor ")
-  public ResponseEntity<DoctorDTO> createdoctor(@RequestBody DoctorRegisterDTO doctorDTO){
-	  return ResponseEntity.ok(doctorService.createDoctor(doctorDTO));
-  }
- 
+//  @PostMapping
+//  @Operation(description = " Create Doctor ")
+//  public ResponseEntity<DoctorDTO> createdoctor(@RequestBody DoctorRegisterDTO doctorDTO){
+//	  return ResponseEntity.ok(doctorService.createDoctor(doctorDTO));
+//  }
+	
+	// ✅ Create Doctor (with certificate file upload)
+	  @PostMapping(consumes = "multipart/form-data")
+	  @Operation(description = "Create a new Doctor with optional certificate file upload")
+	    public ResponseEntity<DoctorDTO> createDoctor(
+	            @ModelAttribute DoctorRegisterDTO doctorDTO,
+	            @RequestPart(value = "certificate", required = false) MultipartFile certificate) throws IOException {
+
+	        // ✅ Upload certificate to Cloudinary if provided
+	        if (certificate != null && !certificate.isEmpty()) {
+	            String uploadedUrl = cloudinaryService.uploadFile(certificate, "doctor_certificates");
+	            doctorDTO.setCertificateUrl(uploadedUrl);
+	        }
+
+	        DoctorDTO createdDoctor = doctorService.createDoctor(doctorDTO);
+	        return ResponseEntity.ok(createdDoctor);
+	    }
+
+	  
+	  @PostMapping("/login")
+	  public ResponseEntity<DoctorDTO> login(@RequestBody LoginDTO dto){
+		  return ResponseEntity.ok(doctorService.login(dto));
+	  }
+	  
   
 //  // Get all doctors 
   @GetMapping
@@ -71,7 +101,7 @@ public class DoctorController {
   
   
   // ✅ Update doctor
-  @PutMapping("/{id}")
+  @PutMapping("/{id}/edit")
   @Operation(description = " Update Doctor ")
   public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @RequestBody DoctorDTO doctorDTO) {
       return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));

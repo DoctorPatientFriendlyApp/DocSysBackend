@@ -14,6 +14,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     // ✅ Query by user.email using nested property path
     Optional<Doctor> findByUserEmail(String email);
+    
+    Optional<Doctor> findByUserEmailAndUserPassword(String email, String password);
 
     Optional<Doctor> findByMobile(String mobile);
 
@@ -25,4 +27,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     // find doctor who is active
     // ✅ Fetch only active doctors
     List<Doctor> findByActiveTrue();
+
+	
 }

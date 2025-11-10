@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.PatientDTO;
+import app.entity.Doctor;
 import app.entity.Patient;
 import app.entity.Report;
 
@@ -13,6 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, Long> {
+	
+	Optional<Patient> findByUserEmailAndUserPassword(String email, String password);
+	
     Optional<Patient> findByMobile(String mobile);
     boolean existsByAadhaar(String aadhaar);
     boolean existsByPan(String pan);

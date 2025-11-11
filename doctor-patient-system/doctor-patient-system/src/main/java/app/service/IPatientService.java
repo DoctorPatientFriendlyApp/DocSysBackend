@@ -3,11 +3,13 @@ package app.service;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
+import app.entity.Patient;
 import app.entity.Report;
 
 public interface IPatientService {
@@ -45,6 +47,10 @@ public interface IPatientService {
 
     // 🔹 Assign doctor to patient
     PatientDTO assignDoctor(Long patientId, Long doctorId);
+
+	List<Patient> findPatientByDoctorId(Long doctorId);
+
+	ResponseEntity<List<Patient>> getUnassignedPatients();
 
 	
 }

@@ -4,6 +4,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -276,6 +277,22 @@ public class DoctorServiceImpl implements IDoctorService {
     }
 
 
+    public boolean assignPatientToDoctor(Long doctorId, Long patientId) {
+        Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
+        Optional<Patient> patientOpt = patientRepository.findById(patientId);
+
+        if (doctorOpt.isPresent() && patientOpt.isPresent()) {
+            Doctor doctor = doctorOpt.get();
+            Patient patient = patientOpt.get();
+
+            // add doctor to patient & maintain bidirectional link
+            patient.addDoctor(doctor);
+
+            patientRepository.save(patient);
+            return true;
+        }
+        return false;
+    }
 
 }
 	

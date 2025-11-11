@@ -116,6 +116,17 @@ public class PatientController {
     }
 
 
-  
+    //---------------------------------------------------------------------------------
     
+    @GetMapping("/doctor/{doctorId}")
+    public List<Patient> getPatientsByDoctor(@PathVariable Long doctorId) {
+        return patientService.findPatientByDoctorId(doctorId);
+    }
+
+  
+    @GetMapping("/unassigned")
+    public ResponseEntity<List<Patient>> getUnassignedPatients() {
+       return patientService.getUnassignedPatients();
+    }
+
 }

@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.internal.bytebuddy.asm.Advice.Return;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -275,6 +277,20 @@ public class PatientServiceImpl implements IPatientService{
         patient.addDoctor(doctor);
         return toDTO(patientRepository.save(patient));
     }
+
+	@Override
+	public List<Patient> findPatientByDoctorId(Long doctorId) {
+		
+	List<Patient>patients = patientRepository.findByDoctorId(doctorId);
+		return patients;
+	}
+
+	@Override
+	public ResponseEntity<List<Patient>> getUnassignedPatients() {
+		 List<Patient> list = patientRepository.findPatientsWithoutDoctor();
+	        return ResponseEntity.ok(list);
+
+	}
 
 
 

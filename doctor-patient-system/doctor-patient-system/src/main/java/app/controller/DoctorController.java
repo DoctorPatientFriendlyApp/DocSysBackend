@@ -3,6 +3,7 @@ package app.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -137,6 +138,17 @@ public class DoctorController {
       return ResponseEntity.ok(doctorService.verifyDoctor(id));
   }
 
+  
+  // ✅ Assign existing patient to this doctor
+  @PostMapping("/{doctorId}/assignpatienttodoctor/{patientId}")
+  public ResponseEntity<?> assignPatientToDoctor(@PathVariable Long doctorId, @PathVariable Long patientId) {
+      boolean success = doctorService.assignPatientToDoctor(doctorId, patientId);
+      if (success) {
+          return ResponseEntity.ok(Map.of("message", "Patient assigned successfully!"));
+      } else {
+          return ResponseEntity.badRequest().body(Map.of("message", "Failed to assign patient."));
+      }
+  }
   
   
 }

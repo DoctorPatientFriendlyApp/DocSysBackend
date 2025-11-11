@@ -44,6 +44,8 @@ public interface IDoctorService {
    // verify doctor 
 	public DoctorDTO verifyDoctor(Long id);
 
+	boolean assignPatientToDoctor(Long doctorId, Long patientId);
+
 	
     
 }

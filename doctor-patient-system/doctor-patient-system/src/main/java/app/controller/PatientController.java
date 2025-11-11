@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
+import app.entity.Doctor;
 import app.entity.Gender;
 import app.entity.Patient;
 import app.entity.Report;
@@ -27,11 +28,11 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 
-//@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/patients")
 @AllArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "http://localhost:5173")
 public class PatientController {
 
     private final IPatientService patientService;//✅ inject interface
@@ -51,7 +52,7 @@ public class PatientController {
     }
 
     // ✅ Update Patient : diagnosis or advice
-    @PutMapping("/{id}")
+    @PutMapping("/updatepatient/{id}")
     @Operation(description = " Update Patient ")
     public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @RequestBody PatientDTO dto) {
         return ResponseEntity.ok(patientService.updatePatient(id, dto));
@@ -121,6 +122,12 @@ public class PatientController {
     @GetMapping("/doctor/{doctorId}")
     public List<Patient> getPatientsByDoctor(@PathVariable Long doctorId) {
         return patientService.findPatientByDoctorId(doctorId);
+    }
+
+    @GetMapping("/{patientId}/doctors")
+    public ResponseEntity<List<Doctor>> getDoctorsByPatient(@PathVariable Long patientId) {
+        List<Doctor> doctors = patientService.getDoctorsByPatient(patientId);
+        return ResponseEntity.ok(doctors);
     }
 
   

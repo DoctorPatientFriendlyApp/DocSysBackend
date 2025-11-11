@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
+import app.entity.Doctor;
 import app.entity.Patient;
 import app.entity.Report;
 
@@ -51,6 +52,8 @@ public interface IPatientService {
 	List<Patient> findPatientByDoctorId(Long doctorId);
 
 	ResponseEntity<List<Patient>> getUnassignedPatients();
+
+	List<Doctor> getDoctorsByPatient(Long patientId);
 
 	
 }

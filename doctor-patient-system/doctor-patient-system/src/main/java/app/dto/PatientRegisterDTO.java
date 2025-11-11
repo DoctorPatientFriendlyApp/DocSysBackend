@@ -15,7 +15,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class PatientRegisterDTO {
-
+  
+	private Long id; // for response purpose we are adding id here. we are not using this id for registering patient
+	
 	 private String email;
      private String password;
 	
@@ -24,7 +26,7 @@ public class PatientRegisterDTO {
     private SocialClass socialEconomicalStatus;
     private ZodiacSign zodiacSign;
 	
-    private Long id; // for response purpose we are adding id here. we are not using this id for registering patient
+    
     private String name;
     private Integer age;
     private String address;

@@ -252,7 +252,8 @@ public class PatientServiceImpl implements IPatientService{
                 .orElseThrow(() -> new RuntimeException("Active patient not found"));
         return toDTO(patient);
     }
-
+    
+   
     // ✅ Get patient by ID
     public PatientDTO getPatientById(Long id) {
         Patient patient = patientRepository.findById(id)
@@ -292,6 +293,13 @@ public class PatientServiceImpl implements IPatientService{
 
 	}
 
+
+	public List<Doctor> getDoctorsByPatient(Long patientId) {
+	    Patient patient = patientRepository.findById(patientId)
+	        .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+	    return patient.getDoctors(); // assuming ManyToMany or OneToMany relation
+	}
 
 
 }

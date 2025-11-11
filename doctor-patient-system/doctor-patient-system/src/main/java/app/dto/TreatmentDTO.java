@@ -15,3 +15,4 @@ public class TreatmentDTO {
     private String beforeCondition;
     private String afterCondition;
 }
+	

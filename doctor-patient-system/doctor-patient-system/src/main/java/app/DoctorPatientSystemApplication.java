@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -46,13 +47,14 @@ public class DoctorPatientSystemApplication {
 
 	    mapper.addConverter(localDateConverter);
 	    
-//	    // ✅ Skip reports mapping to prevent overwrite of existing reports
-	    // Skip relational collections to avoid overwriting Hibernate-managed lists
+	    // ✅ Skip reports mapping to prevent overwrite of existing reports
+//	     Skip relational collections to avoid overwriting Hibernate-managed lists
 	    mapper.typeMap(PatientDTO.class, Patient.class)
 	          .addMappings(m -> {
 	              m.skip(Patient::setReports);
 	              m.skip(Patient::setTreatments);
 	          });
+	  
 	    
 	    return mapper;
 	}

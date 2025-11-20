@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class HistoryDTO {
-	private Long id;
+
     private String pastHistory;
     private String surgeryHistory;
     private String treatmentHistory;

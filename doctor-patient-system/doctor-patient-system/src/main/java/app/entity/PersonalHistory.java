@@ -31,4 +31,12 @@ public class PersonalHistory {
     private String extraMaritalHistory;
     private String menstrualHistory;
     private String obstetricHistory;
-}
+    private String gynecologicalHistory;
+    private String milestoneHistory;
+    private String socalHistory;
+    private String immunizationHistory;
+    private String criminalHistory;
+    private String psychologicalTraumatizedHistory;
+    private String accidentalHistory;
+//    mind : current psy state with date
+} 

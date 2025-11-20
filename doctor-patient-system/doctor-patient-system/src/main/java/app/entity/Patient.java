@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.hibernate.query.sqm.FetchClauseType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -39,8 +41,11 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
     
     @Column(nullable = true)
     private String bloodGroup;
+  
     @Column(nullable = true)
-    private String diagnosis;
+    private Thermal thermalType;
+    
+    
     @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private SocialClass socialEconomicalStatus;
@@ -74,6 +79,32 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
     @OneToOne(cascade = CascadeType.ALL, optional = true,fetch = FetchType.EAGER)       // cascade = CascadeType.ALL means — when you save a patient, the related history gets automatically saved too.
     private History history;
 
+    // GeneralExamination(1:1)
+    @OneToOne(cascade=CascadeType.ALL,optional=true, fetch=FetchType.EAGER)
+    private GeneralExamination generalExamination;
+    
+    //PatientDescription (1:1)
+    @OneToOne(cascade=CascadeType.ALL,optional=true, fetch=FetchType.EAGER)
+    private PatientDescription patientDescription;
+    
+    // VitalSigns (1:1)
+    @OneToOne(cascade=CascadeType.ALL,optional=true, fetch=FetchType.EAGER)
+    private VitalSigns vitalSigns;
+    
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "systemic_exam_id")
+    private SystemicExamination systemicExamination;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "diagnosis_details_id")
+    private DiagnosisDetails diagnosisDetails;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "prescription_id")
+    private Prescription prescription;
+
+    
+    
    // Treatments (1:N)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude                                                         // remove treatments which are not mapped with patient

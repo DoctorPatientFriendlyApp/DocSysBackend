@@ -1,12 +1,14 @@
 package app.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import app.entity.*;
-import lombok.*;
+import app.entity.Gender;
+import app.entity.SocialClass;
+import app.entity.ZodiacSign;
 
 @Getter
 @Setter
@@ -15,34 +17,85 @@ import lombok.*;
 @Builder
 public class PatientDTO {
 
-    private Long id; // for response purpose we are adding id here. we are not using this id for registering patient
+    @Schema(description = "Database ID (used only for responses)")
+    private Long id;
+
+    @Schema(description = "Full name of the patient")
     private String name;
+
+    @Schema(description = "Age of the patient")
     private Integer age;
+
+    @Schema(description = "Patient's residential address")
     private String address;
+
+    @Schema(description = "Patient mobile number")
     private String mobile;
+
+    @Schema(description = "Aadhaar number of the patient")
     private String aadhaar;
+
+    @Schema(description = "PAN number of the patient")
     private String pan;
+
+    @Schema(description = "Date of Birth")
     private LocalDate dob;
+
+    @Schema(description = "Blood Group (A+, A−, B+, O−, etc)")
     private String bloodGroup;
-    private String diagnosis;
-    private String doctorAdvice;
-    private boolean active;
     
-  //enum 
+    @Schema(description = "Doctor's advice or recommendation")
+    private String doctorAdvice;
+
+    @Schema(description = "Whether patient is active or not")
+    private boolean active;
+
+
+    // ---------------------------
+    // ENUMS
+    // ---------------------------
+
+    @Schema(description = "Gender of patient")
     private Gender sex;
+
+    @Schema(description = "Social economical class")
     private SocialClass socialEconomicalStatus;
+
+    @Schema(description = "Zodiac sign of the patient")
     private ZodiacSign zodiacSign;
 
-    // 👩‍⚕️ Doctor relationships (only IDs)
+
+    // ---------------------------
+    // RELATIONSHIP IDs
+    // ---------------------------
+
+    @Schema(description = "List of Doctor IDs associated with patient")
     private List<Long> doctorIds;
-    
-    // 🧠 History (nested DTOs)
+
+    @Schema(description = "User ID for login mapping (optional)")
+    private Long userId;
+
+
+    // ---------------------------
+    // NESTED DTOs
+    // ---------------------------
+    private GeneralExaminationDTO generalExamination;
+    private PatientDescriptionDTO patientDescription;
+    private VitalSignsDTO vitalSigns;
     private HistoryDTO history;
+    private SystemicExaminationDTO systemicExamination;
+    private DiagnosisDetailsDTO diagnosisDetails;
+    private PrescriptionDTO prescription;
 
-   // 🧪 Reports
+
+    // ---------------------------
+    // REPORTS AND TREATMENTS
+    // ---------------------------
+
+    @Schema(description = "List of lab reports for the patient")
     private List<ReportDTO> reports;
-  // 💊 Treatments
-    private List<TreatmentDTO> treatments;
 
+    @Schema(description = "List of treatments taken by the patient")
+    private List<TreatmentDTO> treatments;
 
 }

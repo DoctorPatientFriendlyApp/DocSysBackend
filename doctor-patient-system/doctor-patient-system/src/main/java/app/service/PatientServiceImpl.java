@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -116,87 +118,164 @@ public class PatientServiceImpl implements IPatientService{
     
     
     
-    
+	@Transactional
+	public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
+
+	    Patient patient = patientRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
+
+	    // Map basic fields
+	    modelMapper.map(patientDTO, patient);
+
+	    if (patientDTO.getDob() != null) {
+	        patient.setDob(patientDTO.getDob());
+	    }
+
+	    // ====== Reports ======
+	    if (patientDTO.getReports() != null) {
+
+	        // 1. REMOVE old reports not present in DTO
+	        Set<Long> incomingIds = patientDTO.getReports().stream()
+	                .map(ReportDTO::getId)
+	                .filter(Objects::nonNull)
+	                .collect(Collectors.toSet());
+
+	        patient.getReports().removeIf(r ->
+	                r.getId() != null && !incomingIds.contains(r.getId()));
+
+	        // 2. UPDATE OR ADD
+	        for (ReportDTO reportDTO : patientDTO.getReports()) {
+	            if (reportDTO.getId() != null) {
+	                // find existing
+	                patient.getReports().stream()
+	                        .filter(r -> r.getId().equals(reportDTO.getId()))
+	                        .findFirst()
+	                        .ifPresent(existing -> modelMapper.map(reportDTO, existing));
+	            } else {
+	                // new report
+	                Report newReport = modelMapper.map(reportDTO, Report.class);
+	                newReport.setPatient(patient);
+	                patient.addReport(newReport);
+	            }
+	        }
+	    }
+
+	    // ====== Treatments ======
+	    if (patientDTO.getTreatments() != null) {
+
+	        Set<Long> incomingIds = patientDTO.getTreatments().stream()
+	                .map(TreatmentDTO::getId)
+	                .filter(Objects::nonNull)
+	                .collect(Collectors.toSet());
+
+	        patient.getTreatments().removeIf(t ->
+	                t.getId() != null && !incomingIds.contains(t.getId()));
+
+	        for (TreatmentDTO treatmentDTO : patientDTO.getTreatments()) {
+	            if (treatmentDTO.getId() != null) {
+	                patient.getTreatments().stream()
+	                        .filter(t -> t.getId().equals(treatmentDTO.getId()))
+	                        .findFirst()
+	                        .ifPresent(existing -> modelMapper.map(treatmentDTO, existing));
+	            } else {
+	                Treatment t = modelMapper.map(treatmentDTO, Treatment.class);
+	                t.setPatient(patient);
+	                patient.addTreatment(t);
+	            }
+	        }
+	    }
+
+	    // Doctors
+	    if (patientDTO.getDoctorIds() != null) {
+	        List<Doctor> newDoctors = doctorRepository.findAllById(patientDTO.getDoctorIds());
+	        patient.clearDoctors();
+	        newDoctors.forEach(patient::addDoctor);
+	    }
+
+	    Patient saved = patientRepository.save(patient);
+	    return toDTO(saved);
+	}
+
   
 //        // 5️⃣ Update 
-        @Transactional
-        public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
-
-            // 1️⃣ Fetch managed entity
-            Patient patient = patientRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
-
-            // 2️⃣ Update basic fields
-            modelMapper.map(patientDTO, patient); // if your mapper ignores nulls, safe shortcut for simple fields
-
-            System.out.println("DTO DOB: " + patientDTO.getDob());
-            System.out.println("Entity DOB before map: " + patient.getDob());
-
-         // ✅ Manually apply DOB because ModelMapper sometimes skips LocalDate fields
-            if (patientDTO.getDob() != null) {
-                patient.setDob(patientDTO.getDob());
-            }
-            System.out.println("Entity DOB before map: " + patient.getDob());
-            
-            
-         // ✅3 Handle Reports (Add new or update existing, don't delete old)
-            if (patientDTO.getReports() != null && !patientDTO.getReports().isEmpty()) {
-                for (ReportDTO reportDTO : patientDTO.getReports()) {
-
-                    // 1️⃣ Try to find an existing report by ID
-                    Optional<Report> existingReportOpt = patient.getReports().stream()
-                            .filter(r -> reportDTO.getId() != null && r.getId().equals(reportDTO.getId()))
-                            .findFirst();
-
-                    if (existingReportOpt.isPresent()) {
-                        // 2️⃣ Update existing report fields
-                        Report existingReport = existingReportOpt.get();
-                        modelMapper.map(reportDTO, existingReport);
-
-                    } else {
-                        // 3️⃣ Add new report (no ID or not found in existing)
-                        Report newReport = modelMapper.map(reportDTO, Report.class);
-                        newReport.setPatient(patient); // maintain bidirectional relation
-                        patient.addReport(newReport);
-                    }
-                }
-            }
-
-         // ✅ 4.Handle Treatments (Add new or update existing, don't delete old)
-            if (patientDTO.getTreatments() != null && !patientDTO.getTreatments().isEmpty()) {
-                for (TreatmentDTO treatmentDTO : patientDTO.getTreatments()) {
-
-                    // 1️⃣ Try to find an existing treatment by ID
-                    Optional<Treatment> existingTreatmentOpt = patient.getTreatments().stream()
-                            .filter(t -> treatmentDTO.getId() != null && t.getId().equals(treatmentDTO.getId()))
-                            .findFirst();
-
-                    if (existingTreatmentOpt.isPresent()) {
-                        // 2️⃣ Update existing treatment fields
-                        Treatment existingTreatment = existingTreatmentOpt.get();
-                        modelMapper.map(treatmentDTO, existingTreatment);
-
-                    } else {
-                        // 3️⃣ Add new treatment (no ID or not found in existing)
-                        Treatment newTreatment = modelMapper.map(treatmentDTO, Treatment.class);
-                        newTreatment.setPatient(patient); // maintain bidirectional relation
-                        patient.addTreatment(newTreatment);
-                    }
-                }
-            }
-
-            
-            // 5. Update Doctors (ManyToMany)
-            if (patientDTO.getDoctorIds() != null) {
-                List<Doctor> newDoctors = doctorRepository.findAllById(patientDTO.getDoctorIds());
-                patient.clearDoctors();
-                newDoctors.forEach(patient::addDoctor);
-            }
-
-            // 6️⃣ Save and return
-            Patient updated = patientRepository.save(patient);
-            return toDTO(updated);
-        }
+//        @Transactional
+//        public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
+//
+//            // 1️⃣ Fetch managed entity
+//            Patient patient = patientRepository.findById(id)
+//                    .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
+//
+//            // 2️⃣ Update basic fields
+//            modelMapper.map(patientDTO, patient); // if your mapper ignores nulls, safe shortcut for simple fields
+//
+//            System.out.println("DTO DOB: " + patientDTO.getDob());
+//            System.out.println("Entity DOB before map: " + patient.getDob());
+//
+//         // ✅ Manually apply DOB because ModelMapper sometimes skips LocalDate fields
+//            if (patientDTO.getDob() != null) {
+//                patient.setDob(patientDTO.getDob());
+//            }
+//            System.out.println("Entity DOB before map: " + patient.getDob());
+//            
+//            
+//         // ✅3 Handle Reports (Add new or update existing, don't delete old)
+//            if (patientDTO.getReports() != null && !patientDTO.getReports().isEmpty()) {
+//                for (ReportDTO reportDTO : patientDTO.getReports()) {
+//
+//                    // 1️⃣ Try to find an existing report by ID
+//                    Optional<Report> existingReportOpt = patient.getReports().stream()
+//                            .filter(r -> reportDTO.getId() != null && r.getId().equals(reportDTO.getId()))
+//                            .findFirst();
+//
+//                    if (existingReportOpt.isPresent()) {
+//                        // 2️⃣ Update existing report fields
+//                        Report existingReport = existingReportOpt.get();
+//                        modelMapper.map(reportDTO, existingReport);
+//
+//                    } else {
+//                        // 3️⃣ Add new report (no ID or not found in existing)
+//                        Report newReport = modelMapper.map(reportDTO, Report.class);
+//                        newReport.setPatient(patient); // maintain bidirectional relation
+//                        patient.addReport(newReport);
+//                    }
+//                }
+//            }
+//
+//         // ✅ 4.Handle Treatments (Add new or update existing, don't delete old)
+//            if (patientDTO.getTreatments() != null && !patientDTO.getTreatments().isEmpty()) {
+//                for (TreatmentDTO treatmentDTO : patientDTO.getTreatments()) {
+//
+//                    // 1️⃣ Try to find an existing treatment by ID
+//                    Optional<Treatment> existingTreatmentOpt = patient.getTreatments().stream()
+//                            .filter(t -> treatmentDTO.getId() != null && t.getId().equals(treatmentDTO.getId()))
+//                            .findFirst();
+//
+//                    if (existingTreatmentOpt.isPresent()) {
+//                        // 2️⃣ Update existing treatment fields
+//                        Treatment existingTreatment = existingTreatmentOpt.get();
+//                        modelMapper.map(treatmentDTO, existingTreatment);
+//
+//                    } else {
+//                        // 3️⃣ Add new treatment (no ID or not found in existing)
+//                        Treatment newTreatment = modelMapper.map(treatmentDTO, Treatment.class);
+//                        newTreatment.setPatient(patient); // maintain bidirectional relation
+//                        patient.addTreatment(newTreatment);
+//                    }
+//                }
+//            }
+//
+//            
+//            // 5. Update Doctors (ManyToMany)
+//            if (patientDTO.getDoctorIds() != null) {
+//                List<Doctor> newDoctors = doctorRepository.findAllById(patientDTO.getDoctorIds());
+//                patient.clearDoctors();
+//                newDoctors.forEach(patient::addDoctor);
+//            }
+//
+//            // 6️⃣ Save and return
+//            Patient updated = patientRepository.save(patient);
+//            return toDTO(updated);
+//        }
 
   //------------------------------------------------------------------------------------------------------
         public Report uploadPatientReport(Long patientId,
@@ -226,11 +305,20 @@ public class PatientServiceImpl implements IPatientService{
               // 4️⃣ Save report
                    return reportRepository.save(report);
 }
-
+   
+      
         
         
         
    
+        
+        
+        
+        
+        
+        
+        
+    //-------------------------------------------------------------------------------------------------------    
 
     // ✅ Get all patients
     public List<PatientDTO> getAllPatients() {

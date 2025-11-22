@@ -5,10 +5,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import app.dto.DoctorDTO;
 import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
@@ -52,11 +54,22 @@ public class PatientController {
     }
 
     // ✅ Update Patient : diagnosis or advice
-    @PutMapping("/updatepatient/{id}")
-    @Operation(description = " Update Patient ")
-    public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @RequestBody PatientDTO dto) {
-        return ResponseEntity.ok(patientService.updatePatient(id, dto));
-    }
+    @PutMapping(
+    	    value = "/updatepatient/{id}",
+    	    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    	)
+    	@Operation(description = "Update Patient")
+    	public ResponseEntity<PatientDTO> updatePatient(
+    	        @PathVariable Long id,
+    	        
+    	        @RequestPart("patient") PatientDTO dto,
+    	        
+    	        @RequestPart(value = "files", required = false) 
+    	        List<MultipartFile> files
+    	) {
+    	    return ResponseEntity.ok(patientService.updatePatient(id, dto, files));
+    	}
+
 
     // ✅ Get all
     @GetMapping
@@ -120,13 +133,14 @@ public class PatientController {
     //---------------------------------------------------------------------------------
     
     @GetMapping("/doctor/{doctorId}")
-    public List<Patient> getPatientsByDoctor(@PathVariable Long doctorId) {
+    public List<PatientDTO> getPatientsByDoctor(@PathVariable Long doctorId) {
         return patientService.findPatientByDoctorId(doctorId);
     }
 
     @GetMapping("/{patientId}/doctors")
-    public ResponseEntity<List<Doctor>> getDoctorsByPatient(@PathVariable Long patientId) {
-        List<Doctor> doctors = patientService.getDoctorsByPatient(patientId);
+    public ResponseEntity<List<DoctorDTO>> getDoctorsByPatient(@PathVariable Long patientId) {
+        List<DoctorDTO> doctors = patientService.getDoctorsByPatient(patientId);
+       
         return ResponseEntity.ok(doctors);
     }
 

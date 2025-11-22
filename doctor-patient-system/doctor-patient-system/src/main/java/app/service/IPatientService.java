@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import app.dto.DoctorDTO;
 import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
@@ -21,8 +24,12 @@ public interface IPatientService {
     // Login
     PatientDTO login(LoginDTO dto);
 
+    //---------------------------------------------------------
     // 🔹 Update existing patient details
-    PatientDTO updatePatient(Long id, PatientDTO patientDTO);
+    public PatientDTO updatePatient(Long id, PatientDTO dto, List<MultipartFile> files);
+
+    
+    //----------------------------------------------------------
 
     // 🔹 Upload report to Cloudinary & link to patient
     public Report uploadPatientReport(Long patientId,
@@ -49,11 +56,11 @@ public interface IPatientService {
     // 🔹 Assign doctor to patient
     PatientDTO assignDoctor(Long patientId, Long doctorId);
 
-	List<Patient> findPatientByDoctorId(Long doctorId);
+	List<PatientDTO> findPatientByDoctorId(Long doctorId);
 
 	ResponseEntity<List<Patient>> getUnassignedPatients();
 
-	List<Doctor> getDoctorsByPatient(Long patientId);
+	List<DoctorDTO> getDoctorsByPatient(Long patientId);
 
 	
 }

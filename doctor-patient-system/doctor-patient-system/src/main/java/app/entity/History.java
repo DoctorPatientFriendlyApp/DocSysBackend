@@ -25,7 +25,7 @@ public class History extends BaseEntity{
     private String treatmentHistory;
 
     @Column(length = 1000)
-    private String currentHistory;
+    private String chiefComplaint;
 
     @Column(length = 1000)
     private String familyHistory;

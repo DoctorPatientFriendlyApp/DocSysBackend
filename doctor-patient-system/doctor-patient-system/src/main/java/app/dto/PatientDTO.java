@@ -1,13 +1,17 @@
-package app.dto;
+	package app.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.security.PrivateKey;
 import java.time.LocalDate;
 import java.util.List;
 
 import app.entity.Gender;
+import app.entity.Role;
 import app.entity.SocialClass;
+import app.entity.User;
 import app.entity.ZodiacSign;
 
 @Getter
@@ -22,7 +26,10 @@ public class PatientDTO {
 
     @Schema(description = "Full name of the patient")
     private String name;
-
+    
+    @Schema(description = "Email")
+    private String email;
+    
     @Schema(description = "Age of the patient")
     private Integer age;
 
@@ -50,6 +57,8 @@ public class PatientDTO {
     @Schema(description = "Whether patient is active or not")
     private boolean active;
 
+    @Schema(description = " Role ")
+    private Role role=Role.PATIENT;
 
     // ---------------------------
     // ENUMS

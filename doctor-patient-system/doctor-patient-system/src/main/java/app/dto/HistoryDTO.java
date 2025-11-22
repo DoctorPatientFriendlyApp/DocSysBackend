@@ -12,7 +12,7 @@ public class HistoryDTO {
     private String pastHistory;
     private String surgeryHistory;
     private String treatmentHistory;
-    private String currentHistory;
+    private String chiefComplaint;
     private String familyHistory;
     private PersonalHistoryDTO personalHistory;
 }

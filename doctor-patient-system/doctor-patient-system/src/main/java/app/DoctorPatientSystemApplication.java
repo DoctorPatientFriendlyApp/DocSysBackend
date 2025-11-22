@@ -12,7 +12,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import app.dto.DoctorDTO;
 import app.dto.PatientDTO;
+import app.entity.Doctor;
 import app.entity.Patient;
 
 @SpringBootApplication
@@ -55,6 +57,21 @@ public class DoctorPatientSystemApplication {
 	              m.skip(Patient::setTreatments);
 	          });
 	  
+	    // ✔️ ADD THIS: Map nested User fields when converting Entity → DTO
+	    mapper.typeMap(Patient.class, PatientDTO.class)
+        .addMappings(m -> {
+            m.map(src -> src.getUser().getEmail(), PatientDTO::setEmail);
+            m.map(src -> src.getUser().getRole(), PatientDTO::setRole);
+            m.map(src -> src.getUser().getId(), PatientDTO::setUserId);
+        });
+	    
+	 // ✔️ Map nested user fields for Doctor → DoctorDTO
+	    mapper.typeMap(Doctor.class, DoctorDTO.class)
+	        .addMappings(m -> {
+	            m.map(src -> src.getUser().getEmail(), DoctorDTO::setEmail);
+	            m.map(src -> src.getUser().getRole(), DoctorDTO::setRole);
+//	            m.map(src -> src.getUser().getId(), DoctorDTO::setUserId);
+	        });
 	    
 	    return mapper;
 	}

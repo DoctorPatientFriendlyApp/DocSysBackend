@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import app.dto.DoctorDTO;
 import app.dto.LoginDTO;
 import app.dto.PatientDTO;
 import app.dto.PatientRegisterDTO;
@@ -119,7 +120,7 @@ public class PatientServiceImpl implements IPatientService{
     
     
 	@Transactional
-	public PatientDTO updatePatient(Long id, PatientDTO patientDTO) {
+	public PatientDTO updatePatient(Long id, PatientDTO patientDTO, List<MultipartFile> files) {
 
 	    Patient patient = patientRepository.findById(id)
 	            .orElseThrow(() -> new RuntimeException("Patient not found with id: " + id));
@@ -159,6 +160,30 @@ public class PatientServiceImpl implements IPatientService{
 	            }
 	        }
 	    }
+
+	    
+	 // ===== NEW FILE UPLOAD HANDLING =====
+	    if (files != null && !files.isEmpty()) {
+	        for (MultipartFile file : files) {
+
+	            try {
+	                Report uploaded = uploadPatientReport(
+	                        patient.getId(),
+	                        file,
+	                        "Document",
+	                        "",
+	                        "Uploaded with patient update"
+	                );
+
+	                uploaded.setPatient(patient);
+	                patient.addReport(uploaded);
+
+	            } catch (IOException e) {
+	                throw new RuntimeException("Failed to upload report file: " + file.getOriginalFilename(), e);
+	            }
+	        }
+	    }
+	    
 
 	    // ====== Treatments ======
 	    if (patientDTO.getTreatments() != null) {
@@ -368,10 +393,12 @@ public class PatientServiceImpl implements IPatientService{
     }
 
 	@Override
-	public List<Patient> findPatientByDoctorId(Long doctorId) {
+	public List<PatientDTO> findPatientByDoctorId(Long doctorId) {
 		
 	List<Patient>patients = patientRepository.findByDoctorId(doctorId);
-		return patients;
+//	    converted List of patients into List of PatientDTO
+		return patients.stream().map(this::toDTO).collect(Collectors.toList());
+
 	}
 
 	@Override
@@ -382,11 +409,16 @@ public class PatientServiceImpl implements IPatientService{
 	}
 
 
-	public List<Doctor> getDoctorsByPatient(Long patientId) {
+	public List<DoctorDTO> getDoctorsByPatient(Long patientId) {
 	    Patient patient = patientRepository.findById(patientId)
 	        .orElseThrow(() -> new RuntimeException("Patient not found"));
 
-	    return patient.getDoctors(); // assuming ManyToMany or OneToMany relation
+	      List<Doctor> doctors = patient.getDoctors(); // getting list of doctors
+	      
+	      return doctors.stream()
+	              .map(doc -> modelMapper.map(doc, DoctorDTO.class))
+	              .collect(Collectors.toList()); // assuming ManyToMany or OneToMany relation
+	    
 	}
 
 

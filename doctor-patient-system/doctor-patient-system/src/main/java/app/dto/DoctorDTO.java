@@ -43,5 +43,7 @@ public class DoctorDTO {
 
 	 // Relations (IDs only)
 	    @Schema(description = "List of Patients IDs")
-	    private List<Long> patientIds;   // references to patients (no entity here)
+	    // private List<Long> patientIds;   // references to patients (no entity here)
+	    private List<Long> patientIds = new ArrayList<>();
+
 }

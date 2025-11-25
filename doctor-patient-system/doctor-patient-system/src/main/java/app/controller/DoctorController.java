@@ -102,12 +102,32 @@ public class DoctorController {
   
   
   // ✅ Update doctor
-  @PutMapping("/{id}/edit")
-  @Operation(description = " Update Doctor ")
-  public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @RequestBody DoctorDTO doctorDTO) {
-      return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
-  }
+  // @PutMapping("/{id}/edit")
+  // @Operation(description = " Update Doctor ")
+  // public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @RequestBody DoctorDTO doctorDTO) {
+  //     return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
+  // }
+	// Update also handles file uplode
+	// -------------------------------------------------------------------------
+    // UPDATE DOCTOR (WITH OPTIONAL CERTIFICATE UPLOAD)
+    // -------------------------------------------------------------------------
+@PutMapping(value = "/{id}/edit", consumes = "multipart/form-data")
+public ResponseEntity<DoctorDTO> updateDoctor(
+        @PathVariable Long id,
+        @ModelAttribute DoctorDTO doctorDTO,
+        @RequestPart(value = "certificate", required = false) MultipartFile certificate) throws IOException {
 
+    if (certificate != null && !certificate.isEmpty()) {
+        String url = cloudinaryService.uploadFile(certificate, "doctor_certificates");
+        doctorDTO.setCertificateUrl(url);
+    }
+
+    return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
+}
+
+
+
+	
   // ✅ Soft delete (deactivate doctor)
   @DeleteMapping("/{id}")
   @Operation(description = " Deactivate Doctor")

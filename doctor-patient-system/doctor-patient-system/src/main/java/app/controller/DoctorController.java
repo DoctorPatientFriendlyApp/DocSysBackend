@@ -28,6 +28,7 @@ import app.service.IDoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/doctors")

@@ -28,7 +28,6 @@ import app.service.IDoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 
-
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/doctors")
@@ -110,7 +109,7 @@ public class DoctorController {
   // }
 	// Update also handles file uplode
 	// -------------------------------------------------------------------------
-    // UPDATE DOCTOR (WITH OPTIONAL CERTIFICATE UPLOAD)
+    // UPDATE DOCTOR (WITH CERTIFICATE UPLOAD)
     // -------------------------------------------------------------------------
 @PutMapping(value = "/{id}/edit", consumes = "multipart/form-data")
 public ResponseEntity<DoctorDTO> updateDoctor(
@@ -126,8 +125,17 @@ public ResponseEntity<DoctorDTO> updateDoctor(
     return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
 }
 
+  // UPDATE DOCTOR (WITHOUT CERTIFICATE UPLOAD)
+@PutMapping(value = "/{id}/edit-json", consumes = "application/json")
+public ResponseEntity<DoctorDTO> updateDoctorJson(
+        @PathVariable Long id,
+        @RequestBody DoctorDTO doctorDTO) {
+
+    return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
+}
 
 
+	
 	
   // ✅ Soft delete (deactivate doctor)
   @DeleteMapping("/{id}")
